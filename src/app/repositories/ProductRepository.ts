@@ -9,6 +9,16 @@ class ProductRepository {
     const product = new ProductModel(productData);
     return await product.save();
   }
+
+  async updateProduct(productId: string, productData: any) {
+    return await ProductModel.findByIdAndUpdate(productId, productData, {
+      returnDocument: "after",
+    });
+  }
+
+  async deleteProduct(productId: string) {
+    return await ProductModel.findByIdAndDelete(productId);
+  }
 }
 
 export const productRepository = new ProductRepository();

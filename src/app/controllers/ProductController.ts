@@ -40,3 +40,49 @@ export const createProduct = async (
     });
   }
 };
+
+export const updateProduct = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const productId = req.params.id as string;
+    const productData = req.body;
+
+    const updatedProduct = await productService.updateProduct(
+      productId,
+      productData,
+    );
+
+    res.status(200).json({
+      success: true,
+      data: updatedProduct,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating product",
+    });
+  }
+};
+
+export const deleteProduct = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const productId = req.params.id as string;
+
+    await productService.deleteProduct(productId);
+
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error deleting product",
+    });
+  }
+};

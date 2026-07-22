@@ -10,6 +10,5 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1/products", productRoutes);
-app.use("/api/v1/create-product", productRoutes);
 
 export default app;
