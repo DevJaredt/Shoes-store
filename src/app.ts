@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import productRoutes from "./app/routes/ProductRoutes";
+import categoryRoutes from "./app/routes/CategoryRoutes";
 
 const app: Application = express();
 
@@ -10,5 +11,6 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
 
 export default app;
