@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { ProductModel } from "../models/ProductModel";
 import { productService } from "../services/ProductService";
 
 export const getProducts = async (
@@ -18,6 +17,33 @@ export const getProducts = async (
     res.status(500).json({
       success: false,
       message: "Error retrieving products",
+    });
+  }
+};
+
+export const getProductById = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const product = await productService.getProductById(req.params.id as string);
+
+    if (!product) {
+      res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving product",
     });
   }
 };

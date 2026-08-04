@@ -1,0 +1,786 @@
+{
+  "version": "1.3.0",
+  "generated_at": "2026-08-04",
+  "project": {
+    "name": "shoes-store",
+    "display_name": "Shoes Store",
+    "description": "Backend de gestión para tienda de zapatos con un solo administrador. Los clientes se registran públicamente, ven el catálogo y realizan compras. El admin gestiona productos, categorías, inventario y ventas.",
+    "language": "es",
+    "code_language": "en",
+    "architecture": "layered (Controller -> Service -> Repository -> Model)",
+    "dependency_injection": false,
+    "singleton_exports": true
+  },
+  "stack": {
+    "language": "TypeScript 5.x",
+    "runtime": "Node.js",
+    "web_framework": "Express 4.x",
+    "database": "MongoDB",
+    "orm": "Mongoose 8.x",
+    "auth": "JWT + bcryptjs",
+    "env_loader": "dotenv",
+    "dev_runner": "tsx watch",
+    "compiler": "tsc"
+  },
+  "nodes": [
+    {
+      "id": "package.json",
+      "type": "manifest",
+      "path": "package.json",
+      "description": "Definición de dependencias y scripts. start apunta a dist/server.js. Dependencias estables: Express 4.x, Mongoose 8.x, TypeScript 5.x, dotenv 16.x."
+    },
+    {
+      "id": "tsconfig.json",
+      "type": "config",
+      "path": "tsconfig.json",
+      "description": "Configuración de TypeScript: ES2022, NodeNext, rootDir src, outDir dist, strict true, esModuleInterop true."
+    },
+    {
+      "id": ".env.example",
+      "type": "config",
+      "path": ".env.example",
+      "description": "Documenta variables PORT, MONGODB_URI, JWT_SECRET y ADMIN_* opcionales."
+    },
+    {
+      "id": ".env",
+      "type": "secrets",
+      "path": ".env",
+      "description": "Variables de entorno reales. Ignorado en git. No debe leerse ni modificarse por agentes salvo que el usuario lo solicite."
+    },
+    {
+      "id": "src/server.ts",
+      "type": "entrypoint",
+      "path": "src/server.ts",
+      "description": "Carga dotenv, conecta MongoDB y levanta el servidor Express en process.env.PORT o 3000."
+    },
+    {
+      "id": "src/seedAdmin.ts",
+      "type": "seed_script",
+      "path": "src/seedAdmin.ts",
+      "description": "Crea el primer usuario administrador usando las variables ADMIN_* de .env."
+    },
+    {
+      "id": "src/app.ts",
+      "type": "app_bootstrap",
+      "path": "src/app.ts",
+      "description": "Configura Express, middleware JSON y monta todas las rutas bajo /api/v1/. Catálogo público, gestión protegida para admin, compras para customer."
+    },
+    {
+      "id": "src/app/database/connection.ts",
+      "type": "database_connection",
+      "path": "src/app/database/connection.ts",
+      "description": "Conexión a MongoDB mediante Mongoose. Falla críticamente si MONGODB_URI no está definida."
+    },
+    {
+      "id": "src/app/middleware/auth.ts",
+      "type": "middleware",
+      "path": "src/app/middleware/auth.ts",
+      "description": "Middleware authenticate (JWT) y authorize (roles). Extiende Request de Express con user. Roles admin y customer."
+    },
+    {
+      "id": "src/app/models/UserModel.ts",
+      "type": "model",
+      "path": "src/app/models/UserModel.ts",
+      "description": "Esquema User: name, email único, password hash, document único, phone, role admin|customer, active. Índice compuesto {role, active}."
+    },
+    {
+      "id": "src/app/models/CategoryModel.ts",
+      "type": "model",
+      "path": "src/app/models/CategoryModel.ts",
+      "description": "Esquema Category: name, description, active (soft delete), timestamps."
+    },
+    {
+      "id": "src/app/models/ProductModel.ts",
+      "type": "model",
+      "path": "src/app/models/ProductModel.ts",
+      "description": "Esquema Product: name, brand, category ref, description, purchasePrice, price, active, images, variants[{size,color,stock}], timestamps. Exporta IProduct e IProductVariant. Índices en category y active."
+    },
+    {
+      "id": "src/app/models/SaleModel.ts",
+      "type": "model",
+      "path": "src/app/models/SaleModel.ts",
+      "description": "Esquema Sale: customer ref User, createdBy ref User, date, items snapshot, discount, total, paymentMethod. Índices en {date,createdBy} y {customer,date}."
+    },
+    {
+      "id": "src/app/models/InventoryMovementModel.ts",
+      "type": "model",
+      "path": "src/app/models/InventoryMovementModel.ts",
+      "description": "Esquema InventoryMovement: product ref, type entry|exit|adjustment, size, color, quantity, reason, user ref, sale ref opcional. Índice compuesto en {product,size,color,createdAt}."
+    },
+    {
+      "id": "src/app/repositories/UserRepository.ts",
+      "type": "repository",
+      "path": "src/app/repositories/UserRepository.ts",
+      "description": "Acceso a datos de usuarios. Soft delete, select -password en consultas, búsqueda por email y documento."
+    },
+    {
+      "id": "src/app/repositories/CategoryRepository.ts",
+      "type": "repository",
+      "path": "src/app/repositories/CategoryRepository.ts",
+      "description": "Acceso a datos de categorías. Soft delete, runValidators en updates."
+    },
+    {
+      "id": "src/app/repositories/ProductRepository.ts",
+      "type": "repository",
+      "path": "src/app/repositories/ProductRepository.ts",
+      "description": "Acceso a datos de productos. Hard delete, returnDocument:after en updates, soporte de sesión opcional."
+    },
+    {
+      "id": "src/app/repositories/SaleRepository.ts",
+      "type": "repository",
+      "path": "src/app/repositories/SaleRepository.ts",
+      "description": "Acceso a datos de ventas. Soporte de sesión para transacciones, populate de customer y createdBy."
+    },
+    {
+      "id": "src/app/repositories/InventoryMovementRepository.ts",
+      "type": "repository",
+      "path": "src/app/repositories/InventoryMovementRepository.ts",
+      "description": "Acceso a datos de movimientos de inventario. Soporte de sesión para transacciones."
+    },
+    {
+      "id": "src/app/services/AuthService.ts",
+      "type": "service",
+      "path": "src/app/services/AuthService.ts",
+      "description": "Lógica de autenticación. Valida credenciales con bcrypt y emite JWT."
+    },
+    {
+      "id": "src/app/services/UserService.ts",
+      "type": "service",
+      "path": "src/app/services/UserService.ts",
+      "description": "Lógica de usuarios. Hashea contraseñas, valida email/documento únicos."
+    },
+    {
+      "id": "src/app/services/CategoryService.ts",
+      "type": "service",
+      "path": "src/app/services/CategoryService.ts",
+      "description": "Lógica de negocio de categorías. Delega en CategoryRepository."
+    },
+    {
+      "id": "src/app/services/ProductService.ts",
+      "type": "service",
+      "path": "src/app/services/ProductService.ts",
+      "description": "Lógica de negocio de productos. Delega en ProductRepository. Expone getProductById."
+    },
+    {
+      "id": "src/app/services/SaleService.ts",
+      "type": "service",
+      "path": "src/app/services/SaleService.ts",
+      "description": "Lógica de ventas. Crea compra en transacción, descuenta stock y registra movimientos de salida."
+    },
+    {
+      "id": "src/app/services/InventoryMovementService.ts",
+      "type": "service",
+      "path": "src/app/services/InventoryMovementService.ts",
+      "description": "Lógica de movimientos de inventario. Actualiza stock de variantes dentro de transacciones MongoDB."
+    },
+    {
+      "id": "src/app/controllers/AuthController.ts",
+      "type": "controller_class",
+      "path": "src/app/controllers/AuthController.ts",
+      "description": "Controller de autenticación: login y register. Respuestas envueltas en {success, data}."
+    },
+    {
+      "id": "src/app/controllers/UserController.ts",
+      "type": "controller_class",
+      "path": "src/app/controllers/UserController.ts",
+      "description": "Controller de usuarios con clase + singleton. Respuestas directas. Customer solo puede editar su propio perfil."
+    },
+    {
+      "id": "src/app/controllers/CategoryController.ts",
+      "type": "controller_class",
+      "path": "src/app/controllers/CategoryController.ts",
+      "description": "Controller con clase + singleton. Respuestas directas. Mensajes en español."
+    },
+    {
+      "id": "src/app/controllers/ProductController.ts",
+      "type": "controller_functions",
+      "path": "src/app/controllers/ProductController.ts",
+      "description": "Controller con funciones exportadas sueltas. Respuestas envueltas en {success, data/message}. Mensajes en inglés. Expone getProducts, getProductById, createProduct, updateProduct, deleteProduct."
+    },
+    {
+      "id": "src/app/controllers/SaleController.ts",
+      "type": "controller_class",
+      "path": "src/app/controllers/SaleController.ts",
+      "description": "Controller de ventas. Customer solo ve sus compras; admin ve todas. Respuestas envueltas."
+    },
+    {
+      "id": "src/app/controllers/InventoryMovementController.ts",
+      "type": "controller_class",
+      "path": "src/app/controllers/InventoryMovementController.ts",
+      "description": "Controller de movimientos de inventario con clase + singleton. Respuestas directas."
+    },
+    {
+      "id": "src/app/routes/AuthRoutes.ts",
+      "type": "routes",
+      "path": "src/app/routes/AuthRoutes.ts",
+      "description": "Rutas públicas POST /login y POST /register."
+    },
+    {
+      "id": "src/app/routes/UserRoutes.ts",
+      "type": "routes",
+      "path": "src/app/routes/UserRoutes.ts",
+      "description": "Rutas de usuarios. GET / y POST / para admin; GET /:id, PUT /:id y DELETE /:id con lógica de propiedad/admin."
+    },
+    {
+      "id": "src/app/routes/CategoryRoutes.ts",
+      "type": "routes",
+      "path": "src/app/routes/CategoryRoutes.ts",
+      "description": "Rutas de categorías. GET / y GET /:id públicos; escritura solo admin."
+    },
+    {
+      "id": "src/app/routes/ProductRoutes.ts",
+      "type": "routes",
+      "path": "src/app/routes/ProductRoutes.ts",
+      "description": "Rutas de productos. GET / y GET /:id públicos; escritura solo admin."
+    },
+    {
+      "id": "src/app/routes/SaleRoutes.ts",
+      "type": "routes",
+      "path": "src/app/routes/SaleRoutes.ts",
+      "description": "Rutas de ventas. Requieren autenticación. Customer ve solo sus compras."
+    },
+    {
+      "id": "src/app/routes/InventoryMovementRoutes.ts",
+      "type": "routes",
+      "path": "src/app/routes/InventoryMovementRoutes.ts",
+      "description": "Rutas de movimientos de inventario. Solo admin."
+    }
+  ],
+  "edges": [
+    { "from": "src/server.ts", "to": "src/app.ts", "relationship": "imports_default" },
+    { "from": "src/server.ts", "to": "src/app/database/connection.ts", "relationship": "imports_default" },
+    { "from": "src/seedAdmin.ts", "to": "src/app/database/connection.ts", "relationship": "imports_default" },
+    { "from": "src/seedAdmin.ts", "to": "src/app/models/UserModel.ts", "relationship": "uses_model" },
+    { "from": "src/app.ts", "to": "src/app/routes/AuthRoutes.ts", "relationship": "imports_default" },
+    { "from": "src/app.ts", "to": "src/app/routes/CategoryRoutes.ts", "relationship": "imports_default" },
+    { "from": "src/app.ts", "to": "src/app/routes/InventoryMovementRoutes.ts", "relationship": "imports_default" },
+    { "from": "src/app.ts", "to": "src/app/routes/ProductRoutes.ts", "relationship": "imports_default" },
+    { "from": "src/app.ts", "to": "src/app/routes/SaleRoutes.ts", "relationship": "imports_default" },
+    { "from": "src/app.ts", "to": "src/app/routes/UserRoutes.ts", "relationship": "imports_default" },
+    { "from": "src/app/routes/AuthRoutes.ts", "to": "src/app/controllers/AuthController.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/routes/UserRoutes.ts", "to": "src/app/middleware/auth.ts", "relationship": "uses_middleware" },
+    { "from": "src/app/routes/UserRoutes.ts", "to": "src/app/controllers/UserController.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/routes/CategoryRoutes.ts", "to": "src/app/middleware/auth.ts", "relationship": "uses_middleware" },
+    { "from": "src/app/routes/CategoryRoutes.ts", "to": "src/app/controllers/CategoryController.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/routes/ProductRoutes.ts", "to": "src/app/middleware/auth.ts", "relationship": "uses_middleware" },
+    { "from": "src/app/routes/ProductRoutes.ts", "to": "src/app/controllers/ProductController.ts", "relationship": "uses_named_exports" },
+    { "from": "src/app/routes/SaleRoutes.ts", "to": "src/app/middleware/auth.ts", "relationship": "uses_middleware" },
+    { "from": "src/app/routes/SaleRoutes.ts", "to": "src/app/controllers/SaleController.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/routes/InventoryMovementRoutes.ts", "to": "src/app/middleware/auth.ts", "relationship": "uses_middleware" },
+    { "from": "src/app/routes/InventoryMovementRoutes.ts", "to": "src/app/controllers/InventoryMovementController.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/controllers/AuthController.ts", "to": "src/app/services/AuthService.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/controllers/AuthController.ts", "to": "src/app/services/UserService.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/controllers/UserController.ts", "to": "src/app/services/UserService.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/controllers/CategoryController.ts", "to": "src/app/services/CategoryService.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/controllers/ProductController.ts", "to": "src/app/services/ProductService.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/controllers/SaleController.ts", "to": "src/app/services/SaleService.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/controllers/InventoryMovementController.ts", "to": "src/app/services/InventoryMovementService.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/AuthService.ts", "to": "src/app/repositories/UserRepository.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/UserService.ts", "to": "src/app/repositories/UserRepository.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/CategoryService.ts", "to": "src/app/repositories/CategoryRepository.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/ProductService.ts", "to": "src/app/repositories/ProductRepository.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/SaleService.ts", "to": "src/app/repositories/SaleRepository.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/SaleService.ts", "to": "src/app/repositories/ProductRepository.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/SaleService.ts", "to": "src/app/services/InventoryMovementService.ts", "relationship": "uses_internal" },
+    { "from": "src/app/services/InventoryMovementService.ts", "to": "src/app/repositories/InventoryMovementRepository.ts", "relationship": "uses_singleton" },
+    { "from": "src/app/services/InventoryMovementService.ts", "to": "src/app/models/ProductModel.ts", "relationship": "uses_model_directly" },
+    { "from": "src/app/repositories/UserRepository.ts", "to": "src/app/models/UserModel.ts", "relationship": "uses_model" },
+    { "from": "src/app/repositories/CategoryRepository.ts", "to": "src/app/models/CategoryModel.ts", "relationship": "uses_model" },
+    { "from": "src/app/repositories/ProductRepository.ts", "to": "src/app/models/ProductModel.ts", "relationship": "uses_model" },
+    { "from": "src/app/repositories/SaleRepository.ts", "to": "src/app/models/SaleModel.ts", "relationship": "uses_model" },
+    { "from": "src/app/repositories/InventoryMovementRepository.ts", "to": "src/app/models/InventoryMovementModel.ts", "relationship": "uses_model" },
+    { "from": "src/app/models/ProductModel.ts", "to": "src/app/models/CategoryModel.ts", "relationship": "references_interface" },
+    { "from": "src/app/models/SaleModel.ts", "to": "src/app/models/UserModel.ts", "relationship": "references_interface" },
+    { "from": "src/app/models/SaleModel.ts", "to": "src/app/models/ProductModel.ts", "relationship": "references_interface" },
+    { "from": "src/app/models/InventoryMovementModel.ts", "to": "src/app/models/ProductModel.ts", "relationship": "references_interface" },
+    { "from": "src/app/models/InventoryMovementModel.ts", "to": "src/app/models/SaleModel.ts", "relationship": "references_interface" },
+    { "from": "src/app/models/InventoryMovementModel.ts", "to": "src/app/models/UserModel.ts", "relationship": "references_interface" },
+    { "from": "package.json", "to": "src/server.ts", "relationship": "dev_entrypoint" },
+    { "from": "package.json", "to": "src/server.ts", "relationship": "start_entrypoint" }
+  ],
+  "api_surface": [
+    {
+      "method": "GET",
+      "path": "/",
+      "handler": "root",
+      "location": "src/app.ts",
+      "response": "{ message: string }"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "handler": "register",
+      "controller": "src/app/controllers/AuthController.ts",
+      "service": "src/app/services/UserService.ts",
+      "repository": "src/app/repositories/UserRepository.ts",
+      "model": "src/app/models/UserModel.ts",
+      "auth_required": false,
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, data: { id, name, email, document, phone, role } }"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "handler": "login",
+      "controller": "src/app/controllers/AuthController.ts",
+      "service": "src/app/services/AuthService.ts",
+      "repository": "src/app/repositories/UserRepository.ts",
+      "model": "src/app/models/UserModel.ts",
+      "auth_required": false,
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, data: { token, user } }"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users",
+      "handler": "create",
+      "controller": "src/app/controllers/UserController.ts",
+      "service": "src/app/services/UserService.ts",
+      "repository": "src/app/repositories/UserRepository.ts",
+      "model": "src/app/models/UserModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "IUser (sin password)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users",
+      "handler": "getAll",
+      "controller": "src/app/controllers/UserController.ts",
+      "service": "src/app/services/UserService.ts",
+      "repository": "src/app/repositories/UserRepository.ts",
+      "model": "src/app/models/UserModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "IUser[] (sin password)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/:id",
+      "handler": "getById",
+      "controller": "src/app/controllers/UserController.ts",
+      "service": "src/app/services/UserService.ts",
+      "repository": "src/app/repositories/UserRepository.ts",
+      "model": "src/app/models/UserModel.ts",
+      "auth_required": true,
+      "response_format": "direct",
+      "response_shape": "IUser (sin password)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/users/:id",
+      "handler": "update",
+      "controller": "src/app/controllers/UserController.ts",
+      "service": "src/app/services/UserService.ts",
+      "repository": "src/app/repositories/UserRepository.ts",
+      "model": "src/app/models/UserModel.ts",
+      "auth_required": true,
+      "response_format": "direct",
+      "response_shape": "IUser (sin password)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/users/:id",
+      "handler": "delete",
+      "controller": "src/app/controllers/UserController.ts",
+      "service": "src/app/services/UserService.ts",
+      "repository": "src/app/repositories/UserRepository.ts",
+      "model": "src/app/models/UserModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "{ message: string, user: IUser }",
+      "delete_policy": "soft_delete"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/categories",
+      "handler": "getAll",
+      "controller": "src/app/controllers/CategoryController.ts",
+      "service": "src/app/services/CategoryService.ts",
+      "repository": "src/app/repositories/CategoryRepository.ts",
+      "model": "src/app/models/CategoryModel.ts",
+      "auth_required": false,
+      "response_format": "direct",
+      "response_shape": "ICategory[]",
+      "query_filter": "active: true"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/categories/:id",
+      "handler": "getById",
+      "controller": "src/app/controllers/CategoryController.ts",
+      "service": "src/app/services/CategoryService.ts",
+      "repository": "src/app/repositories/CategoryRepository.ts",
+      "model": "src/app/models/CategoryModel.ts",
+      "auth_required": false,
+      "response_format": "direct",
+      "response_shape": "ICategory"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/categories",
+      "handler": "create",
+      "controller": "src/app/controllers/CategoryController.ts",
+      "service": "src/app/services/CategoryService.ts",
+      "repository": "src/app/repositories/CategoryRepository.ts",
+      "model": "src/app/models/CategoryModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "ICategory"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/categories/:id",
+      "handler": "update",
+      "controller": "src/app/controllers/CategoryController.ts",
+      "service": "src/app/services/CategoryService.ts",
+      "repository": "src/app/repositories/CategoryRepository.ts",
+      "model": "src/app/models/CategoryModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "ICategory",
+      "validation": "runValidators: true"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/categories/:id",
+      "handler": "delete",
+      "controller": "src/app/controllers/CategoryController.ts",
+      "service": "src/app/services/CategoryService.ts",
+      "repository": "src/app/repositories/CategoryRepository.ts",
+      "model": "src/app/models/CategoryModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "{ message: string, category: ICategory }",
+      "delete_policy": "soft_delete"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/products",
+      "handler": "getProducts",
+      "controller": "src/app/controllers/ProductController.ts",
+      "service": "src/app/services/ProductService.ts",
+      "repository": "src/app/repositories/ProductRepository.ts",
+      "model": "src/app/models/ProductModel.ts",
+      "auth_required": false,
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, count: number, data: IProduct[] }"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/products/:id",
+      "handler": "getProductById",
+      "controller": "src/app/controllers/ProductController.ts",
+      "service": "src/app/services/ProductService.ts",
+      "repository": "src/app/repositories/ProductRepository.ts",
+      "model": "src/app/models/ProductModel.ts",
+      "auth_required": false,
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, data: IProduct }"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/products",
+      "handler": "createProduct",
+      "controller": "src/app/controllers/ProductController.ts",
+      "service": "src/app/services/ProductService.ts",
+      "repository": "src/app/repositories/ProductRepository.ts",
+      "model": "src/app/models/ProductModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, data: IProduct }"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/products/:id",
+      "handler": "updateProduct",
+      "controller": "src/app/controllers/ProductController.ts",
+      "service": "src/app/services/ProductService.ts",
+      "repository": "src/app/repositories/ProductRepository.ts",
+      "model": "src/app/models/ProductModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, data: IProduct }"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/products/:id",
+      "handler": "deleteProduct",
+      "controller": "src/app/controllers/ProductController.ts",
+      "service": "src/app/services/ProductService.ts",
+      "repository": "src/app/repositories/ProductRepository.ts",
+      "model": "src/app/models/ProductModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, message: string }",
+      "delete_policy": "hard_delete"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/sales",
+      "handler": "create",
+      "controller": "src/app/controllers/SaleController.ts",
+      "service": "src/app/services/SaleService.ts",
+      "repository": "src/app/repositories/SaleRepository.ts",
+      "model": "src/app/models/SaleModel.ts",
+      "auth_required": true,
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, data: ISale }"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/sales",
+      "handler": "getAll",
+      "controller": "src/app/controllers/SaleController.ts",
+      "service": "src/app/services/SaleService.ts",
+      "repository": "src/app/repositories/SaleRepository.ts",
+      "model": "src/app/models/SaleModel.ts",
+      "auth_required": true,
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, count: number, data: ISale[] }"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/sales/:id",
+      "handler": "getById",
+      "controller": "src/app/controllers/SaleController.ts",
+      "service": "src/app/services/SaleService.ts",
+      "repository": "src/app/repositories/SaleRepository.ts",
+      "model": "src/app/models/SaleModel.ts",
+      "auth_required": true,
+      "response_format": "wrapped",
+      "response_shape": "{ success: true, data: ISale }"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/inventory-movements",
+      "handler": "create",
+      "controller": "src/app/controllers/InventoryMovementController.ts",
+      "service": "src/app/services/InventoryMovementService.ts",
+      "repository": "src/app/repositories/InventoryMovementRepository.ts",
+      "model": "src/app/models/InventoryMovementModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "IInventoryMovement"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory-movements",
+      "handler": "getAll",
+      "controller": "src/app/controllers/InventoryMovementController.ts",
+      "service": "src/app/services/InventoryMovementService.ts",
+      "repository": "src/app/repositories/InventoryMovementRepository.ts",
+      "model": "src/app/models/InventoryMovementModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "IInventoryMovement[]"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/inventory-movements/product/:productId",
+      "handler": "getByProduct",
+      "controller": "src/app/controllers/InventoryMovementController.ts",
+      "service": "src/app/services/InventoryMovementService.ts",
+      "repository": "src/app/repositories/InventoryMovementRepository.ts",
+      "model": "src/app/models/InventoryMovementModel.ts",
+      "auth_required": true,
+      "roles": ["admin"],
+      "response_format": "direct",
+      "response_shape": "IInventoryMovement[]"
+    }
+  ],
+  "data_model": [
+    {
+      "entity": "User",
+      "model": "src/app/models/UserModel.ts",
+      "fields": [
+        { "name": "name", "type": "String", "required": true },
+        { "name": "email", "type": "String", "required": true, "unique": true },
+        { "name": "password", "type": "String", "required": true },
+        { "name": "document", "type": "String", "required": true, "unique": true },
+        { "name": "phone", "type": "String", "required": true },
+        { "name": "role", "type": "String", "enum": ["admin", "customer"], "default": "customer" },
+        { "name": "active", "type": "Boolean", "default": true }
+      ],
+      "soft_delete": true,
+      "timestamps": true
+    },
+    {
+      "entity": "Category",
+      "model": "src/app/models/CategoryModel.ts",
+      "fields": [
+        { "name": "name", "type": "String", "required": true },
+        { "name": "description", "type": "String", "required": true },
+        { "name": "active", "type": "Boolean", "default": true }
+      ],
+      "soft_delete": true,
+      "timestamps": true
+    },
+    {
+      "entity": "Product",
+      "model": "src/app/models/ProductModel.ts",
+      "fields": [
+        { "name": "name", "type": "String", "required": true },
+        { "name": "brand", "type": "String", "required": true },
+        { "name": "category", "type": "ObjectId", "ref": "Category", "required": true },
+        { "name": "description", "type": "String", "required": true },
+        { "name": "purchasePrice", "type": "Number", "required": true, "min": 0 },
+        { "name": "price", "type": "Number", "required": true, "min": 0 },
+        { "name": "active", "type": "Boolean", "default": true },
+        { "name": "images", "type": "String[]" },
+        { "name": "variants", "type": "Array", "items": { "size": "Number", "color": "String", "stock": "Number" } }
+      ],
+      "soft_delete": false,
+      "timestamps": true,
+      "relationships": [
+        { "type": "belongs_to", "target": "Category", "field": "category" }
+      ]
+    },
+    {
+      "entity": "Sale",
+      "model": "src/app/models/SaleModel.ts",
+      "fields": [
+        { "name": "customer", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "date", "type": "Date", "default": "now" },
+        { "name": "items", "type": "Array", "items": { "product": "ObjectId", "nameSnapshot": "String", "size": "Number", "color": "String", "quantity": "Number", "unitPrice": "Number", "subtotal": "Number" } },
+        { "name": "discount", "type": "Number", "default": 0, "min": 0 },
+        { "name": "total", "type": "Number", "required": true, "min": 0 },
+        { "name": "paymentMethod", "type": "String", "enum": ["cash", "card", "transfer"], "required": true }
+      ],
+      "soft_delete": false,
+      "timestamps": true,
+      "relationships": [
+        { "type": "belongs_to", "target": "User", "field": "customer" },
+        { "type": "belongs_to", "target": "User", "field": "createdBy" }
+      ]
+    },
+    {
+      "entity": "InventoryMovement",
+      "model": "src/app/models/InventoryMovementModel.ts",
+      "fields": [
+        { "name": "product", "type": "ObjectId", "ref": "Product", "required": true },
+        { "name": "type", "type": "String", "enum": ["entry", "exit", "adjustment"], "required": true },
+        { "name": "size", "type": "Number", "required": true },
+        { "name": "color", "type": "String", "required": true },
+        { "name": "quantity", "type": "Number", "required": true, "min": 0 },
+        { "name": "reason", "type": "String" },
+        { "name": "user", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "sale", "type": "ObjectId", "ref": "Sale" }
+      ],
+      "soft_delete": false,
+      "timestamps": true,
+      "relationships": [
+        { "type": "belongs_to", "target": "Product", "field": "product" },
+        { "type": "belongs_to", "target": "User", "field": "user" },
+        { "type": "belongs_to", "target": "Sale", "field": "sale" }
+      ]
+    }
+  ],
+  "conventions": [
+    "Código en inglés; documentación de negocio y mensajes de error en español.",
+    "Interfaces de Mongoose prefijadas con I (IUser, IProduct, IProductVariant, ICategory, ISale, IInventoryMovement).",
+    "Modelos exportados como UserModel, CategoryModel, ProductModel, SaleModel, InventoryMovementModel.",
+    "Repositorios y servicios exportados como instancias singleton.",
+    "Nuevos dominios deben seguir el patrón model -> repository -> service -> controller -> routes.",
+    "Preferir el estilo de CategoryController (clase + singleton) para nuevos módulos.",
+    "Todas las rutas deben montarse en src/app.ts bajo el prefijo /api/v1/.",
+    "Catálogo de productos y categorías público (GET sin autenticación).",
+    "Registro público de clientes en POST /api/v1/auth/register con rol customer.",
+    "Gestión de productos, categorías, usuarios e inventario restringida a admin.",
+    "Compras (ventas) requieren autenticación como customer o admin.",
+    "No exponer el campo password en respuestas de usuarios."
+  ],
+  "known_issues": [
+    {
+      "id": "ISSUE-003",
+      "severity": "low",
+      "description": "Dos estilos de controllers coexisten. ProductController sigue usando funciones exportadas sueltas; debería migrarse a clase + singleton para homogeneidad.",
+      "location": "src/app/controllers/ProductController.ts"
+    },
+    {
+      "id": "ISSUE-004",
+      "severity": "low",
+      "description": "Política de eliminación inconsistente: categorías y usuarios usan soft delete, productos usan hard delete.",
+      "location": "src/app/repositories/"
+    },
+    {
+      "id": "ISSUE-005",
+      "severity": "medium",
+      "description": "Sin validación explícita de entrada más allá de Mongoose; considerar Zod o Joi.",
+      "location": "src/app/services/"
+    },
+    {
+      "id": "ISSUE-007",
+      "severity": "low",
+      "description": "Sin middleware centralizado de errores; cada controller implementa su propio try/catch.",
+      "location": "src/app/controllers/"
+    },
+    {
+      "id": "ISSUE-008",
+      "severity": "low",
+      "description": "No hay tests. El script npm test solo imprime un error.",
+      "location": "package.json"
+    }
+  ],
+  "resolved_issues": [
+    {
+      "id": "ISSUE-001",
+      "description": "El script start en package.json apuntaba a dist/index.js; corregido a dist/server.js.",
+      "location": "package.json"
+    },
+    {
+      "id": "ISSUE-002",
+      "description": "Prefijo de rutas inconsistente; todas las rutas ahora usan /api/v1/.",
+      "location": "src/app.ts"
+    },
+    {
+      "id": "ISSUE-006",
+      "description": "Sin autenticación ni autorización; implementado JWT con roles admin y customer, registro público y seed de admin.",
+      "location": "src/app/middleware/auth.ts, src/app/routes/AuthRoutes.ts, src/seedAdmin.ts"
+    },
+    {
+      "id": "ISSUE-009",
+      "description": "Versiones inválidas en package.json corregidas (Express 4.x, Mongoose 8.x, TypeScript 5.x, dotenv 16.x).",
+      "location": "package.json"
+    },
+    {
+      "id": "ISSUE-010",
+      "description": "ProductModel exporta correctamente el modelo e IProductVariant; índices duplicados en UserModel eliminados.",
+      "location": "src/app/models/ProductModel.ts, src/app/models/UserModel.ts"
+    },
+    {
+      "id": "ISSUE-011",
+      "description": "CategoryRoutes y ProductRoutes protegidas con auth/roles; GET /products/:id agregado al catálogo público.",
+      "location": "src/app/routes/CategoryRoutes.ts, src/app/routes/ProductRoutes.ts, src/app/controllers/ProductController.ts, src/app/services/ProductService.ts"
+    }
+  ],
+  "rules_for_agents": [
+    "ANTES de crear, modificar o eliminar cualquier archivo, leer .agents/project-graph.json y .agents/project-graph.md.",
+    "DESPUÉS de cualquier cambio que afecte arquitectura, dependencias, rutas, modelos o convenciones, actualizar .agents/project-graph.json y .agents/project-graph.md.",
+    "Mantener la coherencia de prefijos de API: usar /api/v1/ para todas las rutas.",
+    "No agregar dependencias sin verificar que el proyecto ya las use o que sean necesarias.",
+    "Para nuevos dominios, seguir la estructura de capas existente y el estilo de CategoryController.",
+    "Preservar las políticas de persistencia: si el dominio requiere trazabilidad, usar soft delete en el repositorio.",
+    "No exponer credenciales ni modificar archivos .env.",
+    "Ejecutar npm run build antes de finalizar cambios significativos para verificar que compila."
+  ],
+  "next_steps": [
+    "Homogeneizar estilo de controllers (migrar ProductController a clase + singleton) y remover importación sin usar.",
+    "Agregar validación de entrada (Zod o Joi) y manejo centralizado de errores.",
+    "Implementar módulo de reportes: ventas del día/mes, productos más vendidos, ganancias, inventario bajo.",
+    "Agregar paginación en listados.",
+    "Agregar tests automatizados."
+  ]
+}

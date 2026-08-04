@@ -1,0 +1,162 @@
+Planteamiento del problema
+
+Contexto actual
+
+La tienda vende zapatos y controla su operación de forma manual. El inventario, las ventas y los datos de clientes se registran en libreta, hojas de cálculo o herramientas improvisadas.
+
+Problema principal
+
+El negocio no tiene una forma confiable de saber qué productos hay disponibles, cuántos zapatos hay por talla, qué se vendió, quién vendió y cuánto dinero generó cada venta.
+
+Problemas específicos
+
+- No conocen el inventario exacto por talla.
+- Se pierde información de ventas y clientes.
+- No identifican los productos más vendidos.
+- No pueden medir el rendimiento de cada vendedor.
+- No tienen un historial claro de clientes.
+- No saben cuándo reponer inventario.
+- No tienen una pagina web para visualizar
+
+¿Por qué ocurre esto?
+
+Porque el proceso actual es manual y desconectado:
+
+1. El cliente llega.
+2. Pregunta por un zapato.
+3. Se busca en una libreta o Excel.
+4. Si hay stock, se realiza la venta, se descuenta el inventario y se entrega el producto.
+5. Si no, se informa que no hay stock.
+
+Desde este flujo surgen errores, falta de trazabilidad y problemas de control.
+
+Objetivo de la solución
+
+Desarrollar una aplicación que transforme el proceso manual en un sistema organizado y confiable. La solución debe permitir:
+
+- Registrar productos y su inventario por talla.
+- Controlar entradas, salidas y ajustes de inventario.
+- Gestionar clientes y guardar su historial.
+- Registrar ventas correctamente.
+- Generar reportes útiles para la toma de decisiones.
+
+Definición del MVP (Producto Mínimo Viable)
+
+El MVP debe incluir lo esencial para resolver los problemas identificados, sin convertirse en un sistema complejo.
+
+1. Autenticación y roles
+- Inicio de sesión.
+- Cierre de sesión.
+- Roles básicos: Administrador y Vendedor.
+
+2. Gestión de productos
+- Registrar productos con campos clave:
+  - id
+  - nombre
+  - marca
+  - categoría
+  - precio de compra
+  - precio de venta
+  - descripción
+  - estado
+  - fecha de creación
+- Manejar el inventario por talla, no por cantidad total genérica.
+
+3. Inventario por talla
+- Cada zapato debe registrar existencias por talla.
+- Ejemplo:
+  - Nike Air Max
+    - Talla 38 → 3 pares
+    - Talla 39 → 5 pares
+    - Talla 40 → 8 pares
+    - Talla 41 → 2 pares
+- El inventario debe depender de la talla.
+
+4. Categorías y marcas
+- Categorías: Caballero, Dama, Niños, Accesorios.
+- Marcas: Nike, Adidas, Puma, Croydon, u otras.
+
+5. Movimientos de inventario
+- Registrar entradas (compras).
+- Registrar salidas (ventas).
+- Registrar ajustes (daños, pérdidas).
+- Todo movimiento debe quedar registrado.
+- No modificar directamente la cantidad total sin registrar el movimiento.
+
+6. Clientes
+- Guardar información básica de clientes:
+  - nombre
+  - documento
+  - teléfono
+  - correo
+
+7. Ventas
+- Registrar ventas con información completa:
+  - cliente
+  - fecha
+  - vendedor
+  - productos y tallas
+  - cantidad
+  - precio
+  - descuento
+  - total
+  - forma de pago
+
+8. Reportes
+- Ventas del día.
+- Ventas por mes.
+- Productos más vendidos.
+- Ganancias.
+- Inventario bajo.
+
+Casos de uso clave
+
+Registrar producto
+- Actor: Administrador.
+- Flujo:
+  1. El administrador inicia sesión.
+  2. Entra al módulo de productos.
+  3. Presiona "Nuevo".
+  4. Llena el formulario.
+  5. Guarda el producto.
+  6. El sistema valida.
+  7. El sistema registra el producto y confirma.
+
+Registrar movimiento de inventario
+- Actor: Administrador o Vendedor.
+- Flujo:
+  1. Selecciona un producto.
+  2. Elige el tipo de movimiento: entrada, salida o ajuste.
+  3. Especifica la cantidad y la talla.
+  4. Guarda el movimiento.
+  5. El sistema actualiza el inventario y registra el historial.
+
+Registrar venta
+- Actor: Vendedor.
+- Flujo:
+  1. Inicia sesión.
+  2. Selecciona cliente.
+  3. Añade los productos y tallas vendidos.
+  4. Aplica descuento si corresponde.
+  5. Registra la forma de pago.
+  6. El sistema genera total y guarda la venta.
+
+Ver reportes
+- Actor: Administrador.
+- Flujo:
+  1. Accede al módulo de reportes.
+  2. Consulta resultados diarios y mensuales.
+  3. Revisa indicadores de ventas e inventario.
+
+Diseño de la arquitectura
+
+Una arquitectura recomendada para el proyecto:
+
+- Frontend: React.
+- Backend: Node.js + Express.
+- Base de datos: MongoDb
+- Autenticación: JWT.
+- Gestión de imágenes: Cloudinary (si se agregan fotos de productos).
+- Contenerización: Docker.
+
+Este planteamiento debe servir como base para construir una solución clara, enfocada en resolver los problemas reales de la tienda y permitir una operación más ordenada y confiable.

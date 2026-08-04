@@ -1,16 +1,24 @@
 import express, { Application, Request, Response } from "express";
-import productRoutes from "./app/routes/ProductRoutes";
+import authRoutes from "./app/routes/AuthRoutes";
 import categoryRoutes from "./app/routes/CategoryRoutes";
+import inventoryMovementRoutes from "./app/routes/InventoryMovementRoutes";
+import productRoutes from "./app/routes/ProductRoutes";
+import saleRoutes from "./app/routes/SaleRoutes";
+import userRoutes from "./app/routes/UserRoutes";
 
 const app: Application = express();
 
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Hello from your TypeScript Express Server!" });
+  res.json({ message: "Shoes Store API" });
 });
 
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/products", productRoutes);
-app.use("/api/categories", categoryRoutes);
+app.use("/api/v1/sales", saleRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/inventory-movements", inventoryMovementRoutes);
 
 export default app;
