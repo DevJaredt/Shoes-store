@@ -47,12 +47,17 @@ class InventoryMovementService {
       throw new Error("Producto no encontrado");
     }
 
-    const variantIndex = product.variants.findIndex(
-      (v) => v.size === size && v.color.toLowerCase() === color.toLowerCase(),
+    const normalizedColor = color.toLowerCase().trim();
+    let variantIndex = product.variants.findIndex(
+      (v) => v.size === size && v.color.toLowerCase() === normalizedColor,
     );
 
     if (variantIndex === -1) {
-      throw new Error("Variante de talla/color no encontrada");
+      if (type === "exit") {
+        throw new Error(`Variante de talla ${size} color ${color} no encontrada`);
+      }
+      product.variants.push({ size, color: normalizedColor, stock: 0 });
+      variantIndex = product.variants.length - 1;
     }
 
     const variant = product.variants[variantIndex];

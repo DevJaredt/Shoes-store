@@ -1,0 +1,27 @@
+{
+  "name": "shoes-store-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shoes Store monorepo: backend (Express + TypeScript) and frontend (React + TypeScript)",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=backend & npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=backend && npm run build --workspace=frontend",
+    "start": "npm run start --workspace=backend",
+    "seed:admin": "npm run seed:admin --workspace=backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevJaredt/Shoes-store.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DevJaredt/Shoes-store/issues"
+  },
+  "homepage": "https://github.com/DevJaredt/Shoes-store#readme"
+}

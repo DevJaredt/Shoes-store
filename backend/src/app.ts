@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import authRoutes from "./app/routes/AuthRoutes";
 import categoryRoutes from "./app/routes/CategoryRoutes";
@@ -7,6 +8,15 @@ import saleRoutes from "./app/routes/SaleRoutes";
 import userRoutes from "./app/routes/UserRoutes";
 
 const app: Application = express();
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "*",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 
